@@ -51,9 +51,36 @@ export const user = (app) => {
     }
   });
 
+  app.get("/user/:id", authMiddleware, async (req, res, next) => {
+    try {
+      const id = req.params.id;
+      if (!id) {
+        return res.sendStatus(404);
+      }
+      const { data } = await service.GetUserFromId(id, res);
+      return res.json(data);
+    } catch (err) {
+      next(err);
+    }
+  });
+
   app.get("/logout", (req, res, next) => {
     try {
       res.clearCookie("token").send();
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  app.post("/update_cover", async (req, res, next) => {
+    try {
+      const token = req.cookies.token;
+      const { url } = req.body;
+      if (!token) {
+        return res.sendStatus(404);
+      }
+      const { data } = await service.UpdateCoverPic(token, url, res);
+      return res.json(data);
     } catch (err) {
       next(err);
     }

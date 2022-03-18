@@ -164,6 +164,45 @@ class UserService {
       throw new APIError("Data Not found", err);
     }
   }
+
+  async GetUserFromId(id, res) {
+    try {
+      const user = await this.repository.FindUserById({
+        id,
+      });
+      if (user) {
+        return FormateData({
+          message: "done",
+          user: user,
+        });
+      } else {
+        return FormateData({
+          message: "User not found!",
+        });
+      }
+    } catch (err) {
+      throw new APIError("Data Not found", err);
+    }
+  }
+
+  async UpdateCoverPic(token, url, res) {
+    try {
+      const id = (await GetIdFromSignature(token))._id;
+      const res = await this.repository.UpdateCoverPic({ id, url });
+      if (res) {
+        return FormateData({
+          message: "done",
+          result: res,
+        });
+      } else {
+        return FormateData({
+          message: "User not found!",
+        });
+      }
+    } catch (err) {
+      throw new APIError("Data Not found", err);
+    }
+  }
 }
 
 export default UserService;

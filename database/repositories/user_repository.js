@@ -74,6 +74,21 @@ class UserRepository {
       );
     }
   }
+
+  async UpdateCoverPic({ id, url }) {
+    try {
+      const existingUser = await UserModel.findById(id);
+      existingUser.cover_pic = url;
+      const res = await existingUser.save();
+      return res;
+    } catch (err) {
+      throw APIError(
+        "API Error",
+        STATUS_CODES.INTERNAL_ERROR,
+        "Unable to Find User"
+      );
+    }
+  }
 }
 
 export default UserRepository;
