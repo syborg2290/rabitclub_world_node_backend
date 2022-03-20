@@ -85,4 +85,18 @@ export const user = (app) => {
       next(err);
     }
   });
+
+  app.post("/update_profile", async (req, res, next) => {
+    try {
+      const token = req.cookies.token;
+      const { email, bio, url } = req.body;
+      if (!token) {
+        return res.sendStatus(404);
+      }
+      const { data } = await service.UpdateProfile(token, email, bio, url, res);
+      return res.json(data);
+    } catch (err) {
+      next(err);
+    }
+  });
 };

@@ -62,6 +62,7 @@ class UserService {
                 })
                 .send({
                   message: "done",
+                  user: existingUser,
                 });
             } else {
               return FormateData({
@@ -118,6 +119,7 @@ class UserService {
                 })
                 .send({
                   message: "done",
+                  user: existingUser,
                 });
             } else {
               return FormateData({
@@ -154,6 +156,7 @@ class UserService {
           message: "done",
           id: id,
           user: user.username,
+          userData: user,
         });
       } else {
         return FormateData({
@@ -198,6 +201,42 @@ class UserService {
         return FormateData({
           message: "User not found!",
         });
+      }
+    } catch (err) {
+      throw new APIError("Data Not found", err);
+    }
+  }
+
+  async UpdateProfile(token, email, bio, url, res) {
+    try {
+      const id = (await GetIdFromSignature(token))._id;
+      const user = await this.repository.FindUserById({
+        id,
+      });
+      const existingEmail = await this.repository.FindUserByEmail({
+        email,
+      });
+      if (existingEmail && email !== user.email) {
+        return FormateData({
+          message: "Email already used!",
+        });
+      } else {
+        const res = await this.repository.UpdateProfile({
+          id,
+          email,
+          bio,
+          url,
+        });
+        if (res) {
+          return FormateData({
+            message: "done",
+            result: res,
+          });
+        } else {
+          return FormateData({
+            message: "User not found!",
+          });
+        }
       }
     } catch (err) {
       throw new APIError("Data Not found", err);
