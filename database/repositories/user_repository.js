@@ -6,21 +6,12 @@ import {
 } from "../../utils/app-errors.js";
 
 class UserRepository {
-  async CreateUser({
-    email,
-    password,
-    username,
-    profile_pic,
-    isVerified,
-    salt,
-    key,
-  }) {
+  async CreateUser({ email, password, username, isVerified, salt, key }) {
     try {
       const user = new UserModel({
         email,
         password,
         username,
-        profile_pic,
         isVerified,
         salt,
         key,
@@ -90,12 +81,21 @@ class UserRepository {
     }
   }
 
-  async UpdateProfile({ id, email, bio, url }) {
+  async UpdateProfile({
+    id,
+    email,
+    bio,
+    profile_pic_small,
+    profile_pic_medium,
+    profile_pic_default,
+  }) {
     try {
       const existingUser = await UserModel.findById(id);
       existingUser.email = email;
       existingUser.bio = bio;
-      existingUser.profile_pic = url;
+      existingUser.profile_pic_small = profile_pic_small;
+      existingUser.profile_pic_medium = profile_pic_medium;
+      existingUser.profile_pic_default = profile_pic_default;
       const res = await existingUser.save();
       return res;
     } catch (err) {

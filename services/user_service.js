@@ -35,7 +35,6 @@ class UserService {
               let shortUuid = new ShortUniqueId({ length: 10 });
               let key = shortUuid();
               const isVerified = false;
-              const profile_pic = "";
 
               let userPassword = await GeneratePassword(password, salt);
 
@@ -43,7 +42,6 @@ class UserService {
                 email,
                 password: userPassword,
                 username,
-                profile_pic,
                 isVerified,
                 key,
                 salt,
@@ -207,7 +205,15 @@ class UserService {
     }
   }
 
-  async UpdateProfile(token, email, bio, url, res) {
+  async UpdateProfile(
+    token,
+    email,
+    bio,
+    profile_pic_small,
+    profile_pic_medium,
+    profile_pic_default,
+    res
+  ) {
     try {
       const id = (await GetIdFromSignature(token))._id;
       const user = await this.repository.FindUserById({
@@ -225,7 +231,9 @@ class UserService {
           id,
           email,
           bio,
-          url,
+          profile_pic_small,
+          profile_pic_medium,
+          profile_pic_default,
         });
         if (res) {
           return FormateData({

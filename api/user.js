@@ -89,11 +89,25 @@ export const user = (app) => {
   app.post("/update_profile", async (req, res, next) => {
     try {
       const token = req.cookies.token;
-      const { email, bio, url } = req.body;
+      const {
+        email,
+        bio,
+        profile_pic_small,
+        profile_pic_medium,
+        profile_pic_default,
+      } = req.body;
       if (!token) {
         return res.sendStatus(404);
       }
-      const { data } = await service.UpdateProfile(token, email, bio, url, res);
+      const { data } = await service.UpdateProfile(
+        token,
+        email,
+        bio,
+        profile_pic_small,
+        profile_pic_medium,
+        profile_pic_default,
+        res
+      );
       return res.json(data);
     } catch (err) {
       next(err);
