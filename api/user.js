@@ -54,6 +54,7 @@ export const user = (app) => {
   app.get("/user/:id", authMiddleware, async (req, res, next) => {
     try {
       const id = req.params.id;
+
       if (!id) {
         return res.sendStatus(404);
       }
