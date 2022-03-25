@@ -81,6 +81,21 @@ class UserRepository {
     }
   }
 
+  async SetLogged({ id, status }) {
+    try {
+      const existingUser = await UserModel.findById(id);
+      existingUser.isAlreadyLogged = status;
+      const res = await existingUser.save();
+      return res;
+    } catch (err) {
+      throw APIError(
+        "API Error",
+        STATUS_CODES.INTERNAL_ERROR,
+        "Unable to Find User"
+      );
+    }
+  }
+
   async UpdateProfile({
     id,
     email,

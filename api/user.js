@@ -38,6 +38,34 @@ export const user = (app) => {
     }
   });
 
+  app.get("/isLogged/:id", authMiddleware, async (req, res, next) => {
+    try {
+      const id = req.params.id;
+
+      if (!id) {
+        return res.sendStatus(404);
+      }
+      const { data } = await service.IsLogged(id, res);
+      return res.json(data);
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  app.post("/setLogged", authMiddleware, async (req, res, next) => {
+    try {
+      const token = req?.cookies?.token;
+      const { status } = req.body;
+      if (!token) {
+        return res.sendStatus(404);
+      }
+      const { data } = await service.SetLogged(token, status, res);
+      return res.json(data);
+    } catch (err) {
+      next(err);
+    }
+  });
+
   app.get("/user", authMiddleware, async (req, res, next) => {
     try {
       const token = req.cookies.token;

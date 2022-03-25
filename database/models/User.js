@@ -29,6 +29,7 @@ const UserSchema = new Schema(
     salt: { type: String, required: true },
     key: { type: String, required: true, unique: true },
     isVerified: { type: Boolean, default: false },
+    isAlreadyLogged: { type: Boolean, default: true },
     status: { type: Boolean, default: true },
   },
   {

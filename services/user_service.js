@@ -143,6 +143,47 @@ class UserService {
     }
   }
 
+  async IsLogged(id, res) {
+    try {
+      const user = await this.repository.FindUserById({
+        id,
+      });
+      if (user) {
+        return FormateData({
+          message: "done",
+          isLogged: user.isAlreadyLogged,
+        });
+      } else {
+        return FormateData({
+          message: "User not found!",
+        });
+      }
+    } catch (err) {
+      throw new APIError("Data Not found", err);
+    }
+  }
+
+  async SetLogged(token, status, res) {
+    try {
+      const id = (await GetIdFromSignature(token))._id;
+      const user = await this.repository.SetLogged({
+        id,
+        status,
+      });
+      if (user) {
+        return FormateData({
+          message: "done",
+        });
+      } else {
+        return FormateData({
+          message: "User not found!",
+        });
+      }
+    } catch (err) {
+      throw new APIError("Data Not found", err);
+    }
+  }
+
   async GetUser(token, res) {
     try {
       const id = (await GetIdFromSignature(token))._id;
