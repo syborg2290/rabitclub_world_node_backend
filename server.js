@@ -4,6 +4,7 @@ import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import helmet from "helmet";
 import cors from "cors";
+import { Server } from "socket.io";
 import dbConnection from "./database/connection.js";
 import expressSanitizer from "express-sanitizer";
 import mongoSanitize from "express-mongo-sanitize";
@@ -47,6 +48,13 @@ const startServer = () => {
     user(app);
 
     app.use(ErrorHandler);
+
+    // const io = new Server();
+    // io.attachApp(app);
+
+    // io.on("connection", (socket) => {
+    //   // ...
+    // });
 
     app
       .listen(PORT, () => {

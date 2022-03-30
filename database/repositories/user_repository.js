@@ -96,6 +96,36 @@ class UserRepository {
     }
   }
 
+  async SetOnline({ id, status }) {
+    try {
+      const existingUser = await UserModel.findById(id);
+      existingUser.isOnline = status;
+      const res = await existingUser.save();
+      return res;
+    } catch (err) {
+      throw APIError(
+        "API Error",
+        STATUS_CODES.INTERNAL_ERROR,
+        "Unable to Find User"
+      );
+    }
+  }
+
+  async SetOnlineRequestTime({ id }) {
+    try {
+      const existingUser = await UserModel.findById(id);
+      existingUser.lastConnectionRequest = new Date();
+      const res = await existingUser.save();
+      return res;
+    } catch (err) {
+      throw APIError(
+        "API Error",
+        STATUS_CODES.INTERNAL_ERROR,
+        "Unable to Find User"
+      );
+    }
+  }
+
   async UpdateProfile({
     id,
     email,

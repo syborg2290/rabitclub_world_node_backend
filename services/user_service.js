@@ -184,6 +184,47 @@ class UserService {
     }
   }
 
+  async SetOnline(token, status, res) {
+    try {
+      const id = (await GetIdFromSignature(token))._id;
+      const user = await this.repository.SetOnline({
+        id,
+        status,
+      });
+      if (user) {
+        return FormateData({
+          message: "done",
+        });
+      } else {
+        return FormateData({
+          message: "User not found!",
+        });
+      }
+    } catch (err) {
+      throw new APIError("Data Not found", err);
+    }
+  }
+
+  async SetOnlineRequestTime(token, res) {
+    try {
+      const id = (await GetIdFromSignature(token))._id;
+      const user = await this.repository.SetOnlineRequestTime({
+        id,
+      });
+      if (user) {
+        return FormateData({
+          message: "done",
+        });
+      } else {
+        return FormateData({
+          message: "User not found!",
+        });
+      }
+    } catch (err) {
+      throw new APIError("Data Not found", err);
+    }
+  }
+
   async GetUser(token, res) {
     try {
       const id = (await GetIdFromSignature(token))._id;
@@ -213,6 +254,18 @@ class UserService {
         id,
       });
       if (user) {
+        if (user.isOnline) {
+          if (
+            new Date(user.lastConnectionRequest).getMinutes() -
+              new Date().getMinutes() >
+            1
+          ) {
+            await this.repository.SetOnline({
+              id,
+              status: false,
+            });
+          }
+        }
         return FormateData({
           message: "done",
           user: user,

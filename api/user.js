@@ -66,6 +66,20 @@ export const user = (app) => {
     }
   });
 
+  app.post("/setOnline", authMiddleware, async (req, res, next) => {
+    try {
+      const token = req?.cookies?.token;
+      const { status } = req.body;
+      if (!token) {
+        return res.sendStatus(404);
+      }
+      const { data } = await service.SetOnline(token, status, res);
+      return res.json(data);
+    } catch (err) {
+      next(err);
+    }
+  });
+
   app.get("/user", authMiddleware, async (req, res, next) => {
     try {
       const token = req.cookies.token;
@@ -73,6 +87,19 @@ export const user = (app) => {
         return res.sendStatus(404);
       }
       const { data } = await service.GetUser(token, res);
+      return res.json(data);
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  app.post("/setOnlineRequestTime", authMiddleware, async (req, res, next) => {
+    try {
+      const token = req?.cookies?.token;
+      if (!token) {
+        return res.sendStatus(404);
+      }
+      const { data } = await service.SetOnlineRequestTime(token, res);
       return res.json(data);
     } catch (err) {
       next(err);
