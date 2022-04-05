@@ -10,6 +10,7 @@ import expressSanitizer from "express-sanitizer";
 import mongoSanitize from "express-mongo-sanitize";
 import ErrorHandler from "./utils/error-handler.js";
 import { user } from "./api/index.js";
+import { utils } from "./api/utils.js";
 
 dotenv.config();
 
@@ -46,6 +47,7 @@ const startServer = () => {
 
     //api
     user(app);
+    utils(app);
 
     app.use(ErrorHandler);
 
