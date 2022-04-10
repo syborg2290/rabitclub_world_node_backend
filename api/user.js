@@ -142,6 +142,34 @@ export const user = (app) => {
     }
   });
 
+  app.post("/followingUser", async (req, res, next) => {
+    try {
+      const token = req.cookies.token;
+      const { id } = req.body;
+      if (!token) {
+        return res.sendStatus(404);
+      }
+      const { data } = await service.followUser(token, id);
+      return res.json(data);
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  app.get("/amIFollowing/:id", async (req, res, next) => {
+    try {
+      const token = req.cookies.token;
+      const id = req.params.id;
+      if (!token) {
+        return res.sendStatus(404);
+      }
+      const { data } = await service.amIFollowing(token, id);
+      return res.json(data);
+    } catch (err) {
+      next(err);
+    }
+  });
+
   app.post("/update_profile", async (req, res, next) => {
     try {
       const token = req.cookies.token;

@@ -299,6 +299,44 @@ class UserService {
     }
   }
 
+  async amIFollowing(token, followingId) {
+    try {
+      const id = (await GetIdFromSignature(token))._id;
+      const res = await this.repository.amIFollowing({ id, followingId });
+      if (res) {
+        return FormateData({
+          message: "done",
+          result: res,
+        });
+      } else {
+        return FormateData({
+          message: "User not found!",
+        });
+      }
+    } catch (err) {
+      throw new APIError("Data Not found", err);
+    }
+  }
+
+  async followUser(token, followerId) {
+    try {
+      const id = (await GetIdFromSignature(token))._id;
+      const res = await this.repository.followUser({ followerId, id });
+      if (res) {
+        return FormateData({
+          message: "done",
+          result: res,
+        });
+      } else {
+        return FormateData({
+          message: "User not found!",
+        });
+      }
+    } catch (err) {
+      throw new APIError("Data Not found", err);
+    }
+  }
+
   async UpdateProfile(
     token,
     email,
