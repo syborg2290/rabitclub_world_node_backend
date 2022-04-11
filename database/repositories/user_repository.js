@@ -5,6 +5,7 @@ import {
   STATUS_CODES,
 } from "../../utils/app-errors.js";
 import { UserObj } from "../utils.js";
+import { pagination } from "./pagination.js";
 
 class UserRepository {
   async CreateUser({ email, password, username, isVerified, salt, key }) {
@@ -35,8 +36,38 @@ class UserRepository {
       if (!existingUsername) {
         return;
       }
-      const reObj = UserObj(UserObj, false);
+      const reObj = UserObj(existingUsername, false);
       return reObj;
+    } catch (err) {
+      throw APIError(
+        "API Error",
+        STATUS_CODES.INTERNAL_ERROR,
+        "Unable to Find User"
+      );
+    }
+  }
+
+  async GetAllUsers({ page, id }) {
+    try {
+      const res = await pagination(UserModel, page, 20, true);
+      const users = res.results;
+      if (!users) {
+        return;
+      }
+      if (users.length === 0) {
+        return;
+      }
+
+      let listObj = [];
+
+      for (var i = 0; i < users.length; i++) {
+        const reObj = UserObj(users[i], true);
+        const imFollower = users[i].followers.includes(id);
+        reObj.amIFollowing = imFollower;
+        listObj.push(reObj);
+
+        if (listObj.length === users.length) return listObj;
+      }
     } catch (err) {
       throw APIError(
         "API Error",
@@ -52,7 +83,7 @@ class UserRepository {
       if (!existingEmail) {
         return;
       }
-      const reObj = UserObj(UserObj, true);
+      const reObj = UserObj(existingEmail, true);
       return reObj;
     } catch (err) {
       throw APIError(
@@ -69,7 +100,7 @@ class UserRepository {
       if (!existingUser) {
         return;
       }
-      const reObj = UserObj(UserObj, true);
+      const reObj = UserObj(existingUser, true);
       return reObj;
     } catch (err) {
       throw APIError(

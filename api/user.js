@@ -93,6 +93,23 @@ export const user = (app) => {
     }
   });
 
+  app.get("/allUsers/:page", authMiddleware, async (req, res, next) => {
+    try {
+      const token = req.cookies.token;
+      const page = req.params.page;
+      if (!token) {
+        return res.sendStatus(404);
+      }
+      if (!page) {
+        return res.sendStatus(404);
+      }
+      const { data } = await service.GetAllUsers(page, token, res);
+      return res.json(data);
+    } catch (err) {
+      next(err);
+    }
+  });
+
   app.post("/setOnlineRequestTime", authMiddleware, async (req, res, next) => {
     try {
       const token = req?.cookies?.token;
@@ -120,7 +137,7 @@ export const user = (app) => {
     }
   });
 
-  app.get("/logout", (req, res, next) => {
+  app.get("/logout", authMiddleware, (req, res, next) => {
     try {
       res.clearCookie("token").send();
     } catch (err) {
@@ -128,7 +145,7 @@ export const user = (app) => {
     }
   });
 
-  app.post("/update_cover", async (req, res, next) => {
+  app.post("/update_cover", authMiddleware, async (req, res, next) => {
     try {
       const token = req.cookies.token;
       const { url } = req.body;
@@ -142,7 +159,7 @@ export const user = (app) => {
     }
   });
 
-  app.post("/followingUser", async (req, res, next) => {
+  app.post("/followingUser", authMiddleware, async (req, res, next) => {
     try {
       const token = req.cookies.token;
       const { id } = req.body;
@@ -156,7 +173,7 @@ export const user = (app) => {
     }
   });
 
-  app.get("/amIFollowing/:id", async (req, res, next) => {
+  app.get("/amIFollowing/:id", authMiddleware, async (req, res, next) => {
     try {
       const token = req.cookies.token;
       const id = req.params.id;
@@ -170,7 +187,7 @@ export const user = (app) => {
     }
   });
 
-  app.post("/update_profile", async (req, res, next) => {
+  app.post("/update_profile", authMiddleware, async (req, res, next) => {
     try {
       const token = req.cookies.token;
       const {

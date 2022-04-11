@@ -225,6 +225,29 @@ class UserService {
     }
   }
 
+  async GetAllUsers(page, token, res) {
+    try {
+      const id = (await GetIdFromSignature(token))._id;
+      const users = await this.repository.GetAllUsers({
+        page,
+        id,
+      });
+
+      if (users) {
+        return FormateData({
+          message: "done",
+          users: users,
+        });
+      } else {
+        return FormateData({
+          message: "User not found!",
+        });
+      }
+    } catch (err) {
+      throw new APIError("Data Not found", err);
+    }
+  }
+
   async GetUser(token, res) {
     try {
       const id = (await GetIdFromSignature(token))._id;
@@ -320,8 +343,8 @@ class UserService {
 
   async followUser(token, followerId) {
     try {
-      const id = (await GetIdFromSignature(token))._id;
-      const res = await this.repository.followUser({ followerId, id });
+      const followingId = (await GetIdFromSignature(token))._id;
+      const res = await this.repository.followUser({ followerId, followingId });
       if (res) {
         return FormateData({
           message: "done",
