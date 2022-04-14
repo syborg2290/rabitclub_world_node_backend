@@ -11,6 +11,8 @@ import {
 import { APIError, BadRequestError } from "../utils/app-errors.js";
 import ShortUniqueId from "short-unique-id";
 
+var forgotPasswordEmailHistory = [];
+
 class UserService {
   constructor() {
     this.repository = new UserRepository();
@@ -138,6 +140,210 @@ class UserService {
       return FormateData({
         message: "Values can not be null!",
       });
+    } catch (err) {
+      throw new APIError("Data Not found", err);
+    }
+  }
+
+  async ChangeForgotPassword(username, newPassword, code, res) {
+    try {
+      if (username !== null) {
+        if (newPassword !== null) {
+          if (username !== "") {
+            if (newPassword !== "") {
+              const existingUser = await this.repository.FindUserByUsername({
+                username,
+              });
+              if (existingUser) {
+                const index = forgotPasswordEmailHistory.findIndex(
+                  (val) => val.id === existingUser._id.toString()
+                );
+
+                if (index >= 0) {
+                  if (
+                    forgotPasswordEmailHistory[index].code.toString() ===
+                    code.toString()
+                  ) {
+                    let salt = await GenerateSalt();
+                    let userPassword = await GeneratePassword(
+                      newPassword,
+                      salt
+                    );
+                    const id = existingUser._id;
+                    const res = await this.repository.ChangePassword({
+                      id,
+                      userPassword,
+                      salt,
+                    });
+                    if (res) {
+                      return FormateData({
+                        message: "done",
+                        result: true,
+                      });
+                    }
+                  } else {
+                    return FormateData({
+                      message: "Incorrect confirmation code",
+                    });
+                  }
+                } else {
+                  return FormateData({
+                    message: "Incorrect confirmation code",
+                  });
+                }
+              } else {
+                return FormateData({
+                  message: "Not found any account with entered username",
+                });
+              }
+            } else {
+              return FormateData({
+                message: "Password is required!",
+              });
+            }
+          } else {
+            return FormateData({
+              message: "Username is required!",
+            });
+          }
+        }
+      }
+    } catch (err) {
+      throw new APIError("Data Not found", err);
+    }
+  }
+
+  async SendForgotPasswordCode(username, res) {
+    try {
+      if (username !== null) {
+        if (username !== "") {
+          const existingUser = await this.repository.FindUserByUsername({
+            username,
+          });
+          if (existingUser) {
+            let code = Math.floor(10000 + Math.random() * 90000);
+
+            if (
+              forgotPasswordEmailHistory.filter(
+                (val) => val.id === existingUser._id.toString()
+              ).length > 0
+            ) {
+              let index = forgotPasswordEmailHistory.findIndex(
+                (val) => val.id === existingUser._id.toString()
+              );
+
+              if (
+                (new Date().getTime() -
+                  new Date(
+                    new Date(forgotPasswordEmailHistory[index].time)
+                  ).getTime()) /
+                  1000 >=
+                60
+              ) {
+                await SendVerificationCodeToEmail(code, existingUser.email);
+                forgotPasswordEmailHistory[index] = {
+                  id: existingUser._id.toString(),
+                  code: code,
+                  time: new Date(),
+                };
+                return FormateData({
+                  message: "done",
+                  result: true,
+                });
+              } else {
+                let seconds =
+                  Math.floor(
+                    60 -
+                      (new Date().getTime() -
+                        new Date(
+                          forgotPasswordEmailHistory[index].time
+                        ).getTime()) /
+                        1000
+                  ) < 0
+                    ? 0 + " seconds"
+                    : Math.floor(
+                        60 -
+                          (new Date().getTime() -
+                            new Date(
+                              forgotPasswordEmailHistory[index].time
+                            ).getTime()) /
+                            1000
+                      ) + " seconds";
+                return FormateData({
+                  message: "You have to wait before next try, " + seconds,
+                });
+              }
+            } else {
+              await SendVerificationCodeToEmail(code, existingUser.email);
+              forgotPasswordEmailHistory.push({
+                id: existingUser._id.toString(),
+                code: code,
+                time: new Date(),
+              });
+              return FormateData({
+                message: "done",
+                result: true,
+              });
+            }
+          } else {
+            return FormateData({
+              message: "Not found any account with entered username",
+            });
+          }
+        } else {
+          return FormateData({
+            message: "Username is required!",
+          });
+        }
+      }
+    } catch (err) {
+      throw new APIError("Data Not found", err);
+    }
+  }
+
+  async ChangePassword(token, userInputs, res) {
+    try {
+      const { password, newPassword } = userInputs;
+      if (password || newPassword !== null) {
+        if (password || newPassword !== "") {
+          const id = (await GetIdFromSignature(token))._id;
+          const existingUser = await this.repository.FindUserByIdWithPassword({
+            id,
+          });
+          if (existingUser) {
+            // create salt
+            const validPassword = await ValidatePassword(
+              password,
+              existingUser.password,
+              existingUser.salt
+            );
+
+            if (validPassword) {
+              let salt = await GenerateSalt();
+              let userPassword = await GeneratePassword(newPassword, salt);
+              const res = await this.repository.ChangePassword({
+                id,
+                userPassword,
+                salt,
+              });
+              if (res) {
+                return FormateData({
+                  message: "done",
+                  result: true,
+                });
+              }
+            } else {
+              return FormateData({
+                message: "Wrong password,try again!",
+              });
+            }
+          }
+        } else {
+          return FormateData({
+            message: "Values can not be empty!",
+          });
+        }
+      }
     } catch (err) {
       throw new APIError("Data Not found", err);
     }
@@ -271,6 +477,25 @@ class UserService {
     }
   }
 
+  async SearchUsers(token, searchText, res) {
+    try {
+      const id = (await GetIdFromSignature(token))._id;
+      const res = await this.repository.SearchUsers(searchText, id);
+      if (res) {
+        return FormateData({
+          message: "done",
+          result: res,
+        });
+      } else {
+        return FormateData({
+          message: "Users not found!",
+        });
+      }
+    } catch (err) {
+      throw new APIError("Data Not found", err);
+    }
+  }
+
   async GetUserFromId(id, res) {
     try {
       const user = await this.repository.FindUserById({
@@ -279,9 +504,10 @@ class UserService {
       if (user) {
         if (user.isOnline) {
           if (
-            new Date(user.lastConnectionRequest).getMinutes() -
-              new Date().getMinutes() >
-            1
+            (new Date().getTime() -
+              new Date(new Date(user.lastConnectionRequest)).getTime()) /
+              1000 >=
+            60
           ) {
             await this.repository.SetOnline({
               id,
@@ -324,18 +550,13 @@ class UserService {
 
   async amIFollowing(token, followingId) {
     try {
-      const id = (await GetIdFromSignature(token))._id;
-      const res = await this.repository.amIFollowing({ id, followingId });
-      if (res) {
-        return FormateData({
-          message: "done",
-          result: res,
-        });
-      } else {
-        return FormateData({
-          message: "User not found!",
-        });
-      }
+      const userId = (await GetIdFromSignature(token))._id;
+      const res = await this.repository.amIFollowing({ userId, followingId });
+
+      return FormateData({
+        message: "done",
+        result: res,
+      });
     } catch (err) {
       throw new APIError("Data Not found", err);
     }

@@ -38,6 +38,49 @@ export const user = (app) => {
     }
   });
 
+  app.post("/sendForgotPasswordCode", async (req, res, next) => {
+    try {
+      const { username } = req.body;
+      const { data } = await service.SendForgotPasswordCode(username, res);
+      return res.json(data);
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  app.post("/changeForgotPassword", async (req, res, next) => {
+    try {
+      const { username, newPassword, code } = req.body;
+      const { data } = await service.ChangeForgotPassword(
+        username,
+        newPassword,
+        code,
+        res
+      );
+      return res.json(data);
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  app.post("/changePassword", authMiddleware, async (req, res, next) => {
+    try {
+      const token = req?.cookies?.token;
+      if (!token) {
+        return res.sendStatus(404);
+      }
+      const { password, newPassword } = req.body;
+      const { data } = await service.ChangePassword(
+        token,
+        { password, newPassword },
+        res
+      );
+      return res.json(data);
+    } catch (err) {
+      next(err);
+    }
+  });
+
   app.get("/isLogged/:id", authMiddleware, async (req, res, next) => {
     try {
       const id = req.params.id;
@@ -104,6 +147,23 @@ export const user = (app) => {
         return res.sendStatus(404);
       }
       const { data } = await service.GetAllUsers(page, token, res);
+      return res.json(data);
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  app.get("/searchUsers/:text", authMiddleware, async (req, res, next) => {
+    try {
+      const token = req.cookies.token;
+      const searchText = req.params.text;
+      if (!token) {
+        return res.sendStatus(404);
+      }
+      if (!searchText) {
+        return res.sendStatus(404);
+      }
+      const { data } = await service.SearchUsers(token, searchText, res);
       return res.json(data);
     } catch (err) {
       next(err);

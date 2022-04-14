@@ -1,5 +1,7 @@
 "use strict";
 import nodemailer from "nodemailer";
+import dotenv from "dotenv";
+dotenv.config();
 
 const NODEMAINLERUSERNAME = process.env.NODEMAINLER_USERNAME;
 const NODEMAILERPASSWORD = process.env.NODEMAILER_PASSWORD;

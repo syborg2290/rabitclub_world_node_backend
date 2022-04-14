@@ -77,6 +77,39 @@ class UserRepository {
     }
   }
 
+  async SearchUsers(searchText, id) {
+    try {
+      const users = await UserModel.find({
+        username: { $regex: ".*" + searchText + ".*" },
+      }).sort({
+        createdAt: -1,
+      });
+      if (!users) {
+        return;
+      }
+      if (users.length === 0) {
+        return;
+      }
+
+      let listObj = [];
+
+      for (var i = 0; i < users.length; i++) {
+        const reObj = UserObj(users[i], true);
+        const imFollower = users[i].followers.includes(id);
+        reObj.amIFollowing = imFollower;
+        listObj.push(reObj);
+
+        if (listObj.length === users.length) return listObj;
+      }
+    } catch (err) {
+      throw APIError(
+        "API Error",
+        STATUS_CODES.INTERNAL_ERROR,
+        "Unable to Find User"
+      );
+    }
+  }
+
   async FindUserByEmail({ email }) {
     try {
       const existingEmail = await UserModel.findOne({ email: email });
@@ -102,6 +135,42 @@ class UserRepository {
       }
       const reObj = UserObj(existingUser, true);
       return reObj;
+    } catch (err) {
+      throw APIError(
+        "API Error",
+        STATUS_CODES.INTERNAL_ERROR,
+        "Unable to Find User"
+      );
+    }
+  }
+
+  async FindUserByIdWithPassword({ id }) {
+    try {
+      const existingUser = await UserModel.findById(id);
+      if (!existingUser) {
+        return;
+      }
+      const reObj = UserObj(existingUser, false);
+      return reObj;
+    } catch (err) {
+      throw APIError(
+        "API Error",
+        STATUS_CODES.INTERNAL_ERROR,
+        "Unable to Find User"
+      );
+    }
+  }
+
+  async ChangePassword({ id, userPassword, salt }) {
+    try {
+      const existingUser = await UserModel.findById(id);
+      if (!existingUser) {
+        return;
+      }
+      existingUser.password = userPassword;
+      existingUser.salt = salt;
+      const res = await existingUser.save();
+      return res;
     } catch (err) {
       throw APIError(
         "API Error",
@@ -146,11 +215,11 @@ class UserRepository {
       const followerUser = await UserModel.findById(followerId);
 
       let followings = followingUser.following;
-      let followers = followingUser.followers;
+      let followers = followerUser.followers;
 
       if (followingUser.following.includes(followerId)) {
         const indexFollowing = followings.indexOf(followerId);
-        const indexFollower = followings.indexOf(followingId);
+        const indexFollower = followers.indexOf(followingId);
 
         followings.splice(indexFollowing, 1);
         followers.splice(indexFollower, 1);
@@ -165,7 +234,7 @@ class UserRepository {
       const resFollowing = await followingUser.save();
       const resFollower = await followerUser.save();
 
-      const reObj = UserObj(resFollowing, true);
+      const reObj = UserObj(resFollower, true);
       return reObj;
     } catch (err) {
       throw APIError(
