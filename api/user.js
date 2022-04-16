@@ -66,7 +66,7 @@ export const user = (app) => {
   app.post("/changePassword", authMiddleware, async (req, res, next) => {
     try {
       const token = req?.cookies?.token;
-      if (!token) {
+      if (token === undefined || token === null) {
         return res.sendStatus(404);
       }
       const { password, newPassword } = req.body;
@@ -85,9 +85,10 @@ export const user = (app) => {
     try {
       const id = req.params.id;
 
-      if (!id) {
+      if (id === undefined || id === null) {
         return res.sendStatus(404);
       }
+
       const { data } = await service.IsLogged(id, res);
       return res.json(data);
     } catch (err) {
@@ -99,7 +100,7 @@ export const user = (app) => {
     try {
       const token = req?.cookies?.token;
       const { status } = req.body;
-      if (!token) {
+      if (token === undefined || token === null) {
         return res.sendStatus(404);
       }
       const { data } = await service.SetLogged(token, status, res);
@@ -113,7 +114,7 @@ export const user = (app) => {
     try {
       const token = req?.cookies?.token;
       const { status } = req.body;
-      if (!token) {
+      if (token === undefined || token === null) {
         return res.sendStatus(404);
       }
       const { data } = await service.SetOnline(token, status, res);
@@ -123,10 +124,11 @@ export const user = (app) => {
     }
   });
 
-  app.get("/user", authMiddleware, async (req, res, next) => {
+  app.get("/user", async (req, res, next) => {
     try {
       const token = req.cookies.token;
-      if (!token) {
+
+      if (token === undefined || token === null) {
         return res.sendStatus(404);
       }
       const { data } = await service.GetUser(token, res);
@@ -140,10 +142,10 @@ export const user = (app) => {
     try {
       const token = req.cookies.token;
       const page = req.params.page;
-      if (!token) {
+      if (token === undefined || token === null) {
         return res.sendStatus(404);
       }
-      if (!page) {
+      if (page === undefined || page === null) {
         return res.sendStatus(404);
       }
       const { data } = await service.GetAllUsers(page, token, res);
@@ -157,10 +159,10 @@ export const user = (app) => {
     try {
       const token = req.cookies.token;
       const searchText = req.params.text;
-      if (!token) {
+      if (token === undefined || token === null) {
         return res.sendStatus(404);
       }
-      if (!searchText) {
+      if (searchText === undefined || searchText === null) {
         return res.sendStatus(404);
       }
       const { data } = await service.SearchUsers(token, searchText, res);
@@ -173,7 +175,7 @@ export const user = (app) => {
   app.post("/setOnlineRequestTime", authMiddleware, async (req, res, next) => {
     try {
       const token = req?.cookies?.token;
-      if (!token) {
+      if (token === undefined || token === null) {
         return res.sendStatus(404);
       }
       const { data } = await service.SetOnlineRequestTime(token, res);
@@ -187,7 +189,7 @@ export const user = (app) => {
     try {
       const id = req.params.id;
 
-      if (!id) {
+      if (id === undefined || id === null) {
         return res.sendStatus(404);
       }
       const { data } = await service.GetUserFromId(id, res);
@@ -209,7 +211,7 @@ export const user = (app) => {
     try {
       const token = req.cookies.token;
       const { url } = req.body;
-      if (!token) {
+      if (token === undefined || token === null) {
         return res.sendStatus(404);
       }
       const { data } = await service.UpdateCoverPic(token, url, res);
@@ -223,7 +225,7 @@ export const user = (app) => {
     try {
       const token = req.cookies.token;
       const { id } = req.body;
-      if (!token) {
+      if (token === undefined || token === null) {
         return res.sendStatus(404);
       }
       const { data } = await service.followUser(token, id);
@@ -237,7 +239,7 @@ export const user = (app) => {
     try {
       const token = req.cookies.token;
       const id = req.params.id;
-      if (!token) {
+      if (token === undefined || token === null) {
         return res.sendStatus(404);
       }
       const { data } = await service.amIFollowing(token, id);
@@ -257,7 +259,7 @@ export const user = (app) => {
         profile_pic_medium,
         profile_pic_default,
       } = req.body;
-      if (!token) {
+      if (token === undefined || token === null) {
         return res.sendStatus(404);
       }
       const { data } = await service.UpdateProfile(

@@ -248,7 +248,10 @@ class UserRepository {
   async SetLogged({ id, status }) {
     try {
       const existingUser = await UserModel.findById(id);
-      existingUser.isAlreadyLogged = status;
+      let loggerArray = existingUser.loginLogoutLogger;
+      const isLoging = status ? "login" : "logout";
+      loggerArray.push({ status: isLoging, time: new Date() });
+      existingUser.loginLogoutLogger = loggerArray;
       const res = await existingUser.save();
       const reObj = UserObj(res, true);
       return reObj;

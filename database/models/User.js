@@ -32,7 +32,7 @@ const UserSchema = new Schema(
     salt: { type: String, required: true },
     key: { type: String, required: true, unique: true },
     isVerified: { type: Boolean, default: false },
-    isAlreadyLogged: { type: Boolean, default: true },
+    loginLogoutLogger: [mongoose.Schema.Types.Mixed],
     status: { type: Boolean, default: true },
   },
   {
